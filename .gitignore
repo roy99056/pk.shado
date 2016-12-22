@@ -1,3 +1,6 @@
 .venv
 
 *.un~
+
+learning.db
+config.json
