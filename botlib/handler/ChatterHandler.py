@@ -19,13 +19,13 @@ class ChatterHandler():
             storage_adapter="chatterbot.storage.JsonFileStorageAdapter",
             logic_adapters=[
                 {
-                    'import_path': 'RollAdapter.RollAdapter'
+                    'import_path': 'chatterbot_dice.RollAdapter'
                 },
                 "chatterbot.logic.MathematicalEvaluation",
                 "chatterbot.logic.BestMatch",
                 {
-                    'import_path': 'MarkovAdapter.MarkovAdapter',
-                    'threshold': 0.4,
+                    'import_path': 'chatterbot_markov.MarkovAdapter',
+                    'threshold': 0.6,
                     'default_response': 'I am sorry, but I do not understand.'
                 }
             ],

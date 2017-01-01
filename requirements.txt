@@ -1,5 +1,11 @@
+amqp==2.1.4
+billiard==3.5.0.2
+celery==4.0.2
 ChatterBot==0.5.2
+-e git+git@github.com:pknull/chatterbot-dice.git@a81865ff18d4bb78fcbf52f7e3a383c5b18ae060#egg=chatterbot_dice
+-e git+git@github.com:pknull/chatterbot-markov.git@041816dee99b9b609555a0ded331f752d571d868#egg=chatterbot_markov
 click==6.6
+-e git+git@github.com:pknull/rpg-dice.git@aaf4822aee7b641dc4e494a35cafec3ead93ee31#egg=dice_roller
 Flask==0.11.1
 future==0.16.0
 ipgetter==0.6
@@ -7,15 +13,23 @@ itsdangerous==0.24
 Jinja2==2.8
 jsondatabase==0.1.6
 kik==1.2.0
+kombu==4.0.2
+markovify==0.5.3
 MarkupSafe==0.23
+mpmath==0.19
 nltk==3.2.1
-numpy==1.11.2
+numpy==1.11.3
 oauthlib==2.0.1
+pprint==0.1
 pymongo==3.4.0
+pyparsing==2.1.10
 python-twitter==3.2
-requests==2.12.3
+pytz==2016.10
+redis==2.10.5
+requests==2.12.4
 requests-oauthlib==0.7.0
 six==1.10.0
-slackclient==1.0.3
-websocket-client==0.40.0
+sympy==1.0
+Unidecode==0.4.19
+vine==1.1.3
 Werkzeug==0.11.11
