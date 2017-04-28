@@ -1,32 +1,22 @@
 import os
 import time
 from slackclient import SlackClient
-from chatterbot import ChatBot
+from botlib.handler.ChatterHandler import ChatterHandler
 
+import json
+
+# get our config
+with open('config.json', 'r') as f:
+    config = json.load(f)
 
 # ID as an environment variable
-BOT_ID = "U3EF5TTGU"
-SLACK_BOT_TOKEN = "xoxb-116515945572-EKzCYimtFExstOeNErcNnEDc"
+SLACK_BOT_ID = config['SLACK_BOT_ID']
+SLACK_BOT_TOKEN = config['SLACK_BOT_TOKEN']
 
-# Bot
-# configure the bot
-bot = ChatBot(
-    'KIK',
-    trainer='chatterbot.trainers.ChatterBotCorpusTrainer',
-    storage_adapter="chatterbot.storage.JsonFileStorageAdapter",
-    logic_adapters=[
-        "chatterbot.logic.MathematicalEvaluation",
-        "chatterbot.logic.BestMatch"
-    ],
-    database="learning.db"
-)
-
-
-# Train based on the english corpus
-bot.train()
+chatter = ChatterHandler()
 
 # constants
-AT_BOT = "<@" + BOT_ID + ">"
+AT_BOT = "<@" + SLACK_BOT_ID + ">"
 EXAMPLE_COMMAND = "do"
 
 # instantiate Slack & Twilio clients
@@ -41,10 +31,14 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list and len(output_list) > 0:
         for output in output_list:
-            if output and 'text' in output and output['user'] != BOT_ID : # and AT_BOT in output['text']:
+            if output and 'text' in output and output['user'] != SLACK_BOT_ID and AT_BOT in output['text']:
+                msg = output['text'][len(AT_BOT):]
                 # return text after the @ mention, whitespace removed
-                slack_client.api_call("chat.postMessage", channel=output['channel'], 
-                        text=bot.get_response(output['text']).text, as_user=True)
+                print("INPUT: " + msg)
+                response = chatter.respond(msg)
+                print("OUTPUT: " + response)
+                slack_client.api_call("chat.postMessage", channel=output['channel'],
+                        text=response, as_user=True)
 
 
 if __name__ == "__main__":

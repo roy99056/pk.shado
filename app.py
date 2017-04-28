@@ -12,9 +12,9 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 
 # load and set up environment
-BOT_USERNAME = config['BOT_USERNAME']
-BOT_API_KEY = config['BOT_API_KEY']
-BOT_PORT = config['BOT_PORT']
+BOT_USERNAME = config['KIK_BOT_USERNAME']
+BOT_API_KEY = config['KIK_BOT_API_KEY']
+BOT_PORT = config['KIK_BOT_PORT']
 
 CELERY_BROKER_URL = config['CELERY_BROKER_URL']
 CELERY_RESULT_BACKEND = config['CELERY_RESULT_BACKEND']
