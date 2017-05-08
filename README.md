@@ -1,2 +1,2 @@
 # pk.shado
-Kik, python, and shadowrun. Living the outdated meme.
+~~Kik~~ Discord, python, and shadowrun. Living the outdated meme.

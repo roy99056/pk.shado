@@ -1,16 +1,40 @@
 import json
+import string
 import re
-
+import sys
 import discord
+import logging
+import time
+
 from dice_roller.DiceThrower import DiceThrower
 
-with open('config.json', 'r') as f:
-    config = json.load(f)
 
-DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
-
-client = discord.Client()
+expression = re.compile(r"(?:\[|\?)([\w_:+-,<>=()]+)(?:\])?")
 dice = DiceThrower()
+root = logging.getLogger('bot')
+client = discord.Client()
+
+def main():
+
+    # load config
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+    DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
+
+    # configure our logger
+    root.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
+
+    client.run(DISCORD_BOT_TOKEN)
+
+
+@client.async_event
+def on_ready():
+    root.info('Logged in as %s, id: %s', client.user.name, client.user.id)
 
 
 @client.event
@@ -19,47 +43,48 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    expression = re.match(r"(?:\[|\?)([\w_:+-,<>=]+)(?:\])?", message.content)
-    if expression:
-        msg = expression.group(1)
-        print('Matches')
-        msg = get_dice(msg)
-        await client.send_message(message.channel, msg)
-
-    elif client.user in message.mentions:
-        print('Directed')
+    await client.send_typing(message.channel)
+    if client.user in message.mentions:
+        directed = True
+        root.info('Directed Message Received')
         AT_BOT = "<@" + client.user.id + ">"
-        trim_msg = message.content[len(AT_BOT):]
+        plain_message = message.content[len(AT_BOT):]
+    else:
+        directed = False
+        plain_message = message.content
 
+    filtered_message = expression.match(plain_message)
+
+    if filtered_message:
+        trim_msg = filtered_message.group(1).lower().strip(string.whitespace)
         msg = get_dice(trim_msg)
+        if not msg:
+            msg = 'Unable to parse input'
         await client.send_message(message.channel, msg)
-
+    else:
+        root.info('Unable to parse message: %s',plain_message)
     return
 
 
-@client.event
-async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
-
-
 def get_dice(command):
-    print(command)
+    root.info('Received Command %s', command)
+
     # apply template
     if command[0].isalpha():
-        print('Starts with a template name ' + command)
+        root.info('Template Format %s Received', command)
         template = re.match(r"([A-Za-z]+)([0-9+,]*)", command)
         if template:
             command = apply_template(template.group(1), template.group(2))
+
+    if command is False:
+        return None
 
     # get output format
     result_template = str()
     if "|" in command:
         command, result_template = command.split("|", 1)
 
-    print(command)
+    root.info('Formatted Command %s',command)
     score = dice.throw(command)
 
     if (len(result_template) > 0):
@@ -71,12 +96,13 @@ def get_dice(command):
 
 
 def apply_template(template, value=''):
-    print(template, value)
+    root.info('Template Parsed to %s %s', template, value)
     return {
-        'SR': value + 'd6>=5f=1|{s[modified]} {s[success]} successes {s[fail]} fail',
-        'F': '4d3-2' + value + '|{s[total]}',
-        'W': '2d6+0' + value + '|{s[total]}'
+        'sr': value + 'd6>=5f=1|{s[modified]} {s[success]} successes {s[fail]} fail',
+        'f': '4d3-2' + value + '|{s[total]}',
+        'w': '2d6+0' + value + '|{s[total]}'
     }.get(template, False)
 
 
-client.run(DISCORD_BOT_TOKEN)
+if __name__ == '__main__':
+    main()
