@@ -43,7 +43,6 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    await client.send_typing(message.channel)
     if client.user in message.mentions:
         directed = True
         root.info('Directed Message Received')
@@ -56,6 +55,7 @@ async def on_message(message):
     filtered_message = expression.match(plain_message)
 
     if filtered_message:
+        await client.send_typing(message.channel)
         trim_msg = filtered_message.group(1).lower().strip(string.whitespace)
         msg = get_dice(trim_msg)
         if not msg:
