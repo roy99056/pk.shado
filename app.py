@@ -1,4 +1,5 @@
 import json
+import random
 import string
 import re
 import sys
@@ -9,7 +10,10 @@ import time
 from dice_roller.DiceThrower import DiceThrower
 
 
-expression = re.compile(r"(?:\[|\?)([\w_:+-,<>=()]+)(?:\])?")
+dice_expression = re.compile(r"(?:\[)([\w_:+-,<>=()]+)(?:\])?")
+coin_expression = re.compile(r"(?:\[)(coin)")
+room_expression = re.compile(r"(?:\[)(room)")
+
 dice = DiceThrower()
 root = logging.getLogger('bot')
 client = discord.Client()
@@ -43,6 +47,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    await client.change_presence(game=discord.Game(name='RNG the Game'))
     if client.user in message.mentions:
         directed = True
         root.info('Directed Message Received')
@@ -52,17 +57,37 @@ async def on_message(message):
         directed = False
         plain_message = message.content
 
-    filtered_message = expression.match(plain_message)
+    plain_message = plain_message.lower().strip(string.whitespace)
 
-    if filtered_message:
+    dice_message = dice_expression.match(plain_message)
+    coin_message = coin_expression.match(plain_message)
+    room_message = room_expression.match(plain_message)
+
+    if coin_message:
         await client.send_typing(message.channel)
-        trim_msg = filtered_message.group(1).lower().strip(string.whitespace)
+        msg = random.choice(['heads', 'tails'])
+        await client.send_message(message.channel, msg)
+
+    elif room_message:
+        await client.send_typing(message.channel)
+        members = client.get_all_members()
+        actives = []
+        for member in members:
+            if str(member.status) == "online":
+                actives.append(member)
+        member = random.choice(actives)
+
+        msg = "I choose " + str(member.display_name)
+
+        await client.send_message(message.channel, msg)
+
+    elif dice_message:
+        await client.send_typing(message.channel)
+        trim_msg = dice_message.group(1)
         msg = get_dice(trim_msg)
         if not msg:
             msg = 'Unable to parse input'
         await client.send_message(message.channel, msg)
-    else:
-        root.info('Unable to parse message: %s',plain_message)
     return
 
 
