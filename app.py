@@ -50,7 +50,6 @@ async def on_message(message):
     # remove bot from message if included (in @botname scenario)
     if client.user in message.mentions:
         directed = True
-        root.info('Directed Message Received')
         AT_BOT = "<@" + client.user.id + ">"
         plain_message = message.content[len(AT_BOT):]
     else:
@@ -88,7 +87,6 @@ async def on_message(message):
                           command_message.group(4))
 
     else:
-        print("command not parsed " + plain_message)
         return
 
     # apply a template to the result (if requested)
@@ -99,6 +97,7 @@ async def on_message(message):
         msg = result
 
     await client.send_message(message.channel, msg)
+
 
 def get_message(full_command, count, role, args):
     if role == 't':
