@@ -61,7 +61,7 @@ async def on_message(message):
     plain_message = plain_message.lower().strip(string.whitespace)
 
     # expressions
-    command_expression = re.compile(r"(?:!)(([0-9]+)(d|c|r|t)([\w_:+-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
+    command_expression = re.compile(r"(?:!)(([0-9]+)(d|c|r|t)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
     template_expression = re.compile(r"(?:!)([A-Za-z]+)([0-9+,]*)")
 
     # check if a template needs applied
