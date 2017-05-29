@@ -1,3 +1,4 @@
 -e git+git@github.com:pknull/rpg-dice.git@master#egg=dice_roller
+-e git+git@github.com:pknull/rpg-card.git@master#egg=card_picker
 discord.py==0.16.5
 sympy
