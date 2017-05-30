@@ -60,7 +60,7 @@ async def on_message(message):
     plain_message = plain_message.lower().strip(string.whitespace)
 
     # expressions
-    command_expression = re.compile(r"(?:!)(([0-9]+)(d|c|r|t)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
+    command_expression = re.compile(r"(?:!)(([0-9]+)(d|c|r|h)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
     template_expression = re.compile(r"(?:!)([A-Za-z]+)([0-9+,]*)")
 
     # check if a template needs applied
@@ -100,7 +100,7 @@ async def on_message(message):
 
 
 def get_message(full_command, count, role, args):
-    if role == 't':
+    if role == 'h':
         if len(args) > 0:
             deck = Deck(args)
         else:
@@ -140,9 +140,10 @@ def get_message(full_command, count, role, args):
 
 
 def apply_template(template, value=''):
-    root.info('Template Parsed to %s %s', template, value)
+    root.info('parsed template:%s value:%s', template, value)
     return {
-        'sr': '!' + value + 'd6>=5f=1|{s[modified]} {s[success]} successes {s[fail]} fail',
+        'sd': '!' + value + 'd6>=5f=1|{s[modified]} {s[success]} successes {s[fail]} fail',
+        'st': '!' + value + 'hshadow',
         'f': '!' + '4d3-2' + value + '|{s[total]}',
         'w': '!' + '2d6+0' + value + '|{s[total]}'
     }.get(template, False)
