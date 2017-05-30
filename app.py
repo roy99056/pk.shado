@@ -122,7 +122,7 @@ def get_message(full_command, count, role, args):
         members = client.get_all_members()
         actives = []
         for member in members:
-            if str(member.status) == "online":
+            if str(member.status) == "online" and str(member.display_name) != client.user.name:
                 actives.append(member)
         x = 1
         bag = []
