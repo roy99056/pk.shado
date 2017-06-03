@@ -8,11 +8,26 @@ import sys
 import discord
 from card_picker.Deck import Deck
 from dice_roller.DiceThrower import DiceThrower
+from chatterbot import ChatBot
 
 # https://regex101.com/r/SrVpEg/2
 
-
 dice = DiceThrower()
+bot = ChatBot(
+        'danger_bot',
+        trainer='chatterbot.trainers.ChatterBotCorpusTrainer',
+        storage_adapter="chatterbot.storage.JsonFileStorageAdapter",
+        logic_adapters=[
+            "chatterbot.logic.MathematicalEvaluation",
+            {
+                'import_path': 'chatterbot_markov.MarkovAdapter',
+                'threshold': 0.6,
+                'default_response': 'I am sorry, but I do not understand.'
+            }
+        ],
+        database="learning.db"
+    )
+
 root = logging.getLogger('bot')
 client = discord.Client()
 
@@ -21,6 +36,8 @@ def main():
     # load config
     with open('config.json', 'r') as f:
         config = json.load(f)
+
+    # configure discord
     DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
 
     # configure our logger
@@ -86,15 +103,18 @@ async def on_message(message):
         result = get_message(command_message.group(1), int(command_message.group(2)), command_message.group(3),
                           command_message.group(4))
 
+        # apply a template to the result (if requested)
+        result_template = command_message.group(5)
+        if (len(result_template) > 0):
+            msg = result_template.format(s=result)
+        else:
+            msg = result
+
+    elif not command_message and directed:
+        msg = bot.get_response(str(plain_message)).text
+
     else:
         return
-
-    # apply a template to the result (if requested)
-    result_template = command_message.group(5)
-    if (len(result_template) > 0):
-        msg = result_template.format(s=result)
-    else:
-        msg = result
 
     await client.send_message(message.channel, msg)
 
@@ -104,7 +124,7 @@ def get_message(full_command, count, role, args):
         if len(args) > 0:
             deck = Deck(args)
         else:
-            deck = Deck('shadow')
+            deck = Deck('standard')
         deck.create()
         deck.shuffle()
         hand = deck.deal(count)
