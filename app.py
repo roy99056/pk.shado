@@ -4,32 +4,20 @@ import random
 import re
 import string
 import sys
+import markovify
+import os
 
 import discord
 from card_picker.Deck import Deck
 from dice_roller.DiceThrower import DiceThrower
-from chatterbot import ChatBot
 
-# https://regex101.com/r/SrVpEg/2
-
+# set a few vars
 dice = DiceThrower()
-bot = ChatBot(
-        'danger_bot',
-        trainer='chatterbot.trainers.ChatterBotCorpusTrainer',
-        storage_adapter="chatterbot.storage.JsonFileStorageAdapter",
-        logic_adapters=[
-            "chatterbot.logic.MathematicalEvaluation",
-            {
-                'import_path': 'chatterbot_markov.MarkovAdapter',
-                'threshold': 0.6,
-                'default_response': 'I am sorry, but I do not understand.'
-            }
-        ],
-        database="learning.db"
-    )
-
 root = logging.getLogger('bot')
 client = discord.Client()
+
+# https://regex101.com/r/SrVpEg/2
+# some base classes
 
 
 def main():
@@ -49,75 +37,6 @@ def main():
     root.addHandler(ch)
 
     client.run(DISCORD_BOT_TOKEN)
-
-
-@client.async_event
-def on_ready():
-    root.info('Logged in as %s, id: %s', client.user.name, client.user.id)
-
-
-@client.event
-async def on_message(message):
-    # we do not want the bot to reply to itself
-    if message.author == client.user:
-        return
-
-    await client.change_presence(game=discord.Game(name='RNG the Game'))
-
-    # remove bot from message if included (in @botname scenario)
-    if client.user in message.mentions:
-        directed = True
-        AT_BOT = "<@" + client.user.id + ">"
-        plain_message = message.content[len(AT_BOT):]
-    else:
-        directed = False
-        plain_message = message.content
-
-    # simplify the message format
-    plain_message = plain_message.lower().strip(string.whitespace)
-
-    # expressions
-    command_expression = re.compile(r"(?:!)(([0-9]+)(d|c|r|h)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
-    template_expression = re.compile(r"(?:!)([A-Za-z]+)([0-9+,]*)")
-
-    # check if a template needs applied
-    template_message = template_expression.match(plain_message)
-    if template_message:
-        reformed_message = apply_template(template_message.group(1), template_message.group(2))
-        if reformed_message:
-            plain_message = reformed_message
-            reformed_message = True
-
-    # convert the message to our command format
-    command_message = command_expression.match(plain_message)
-
-    # execute the request
-    if command_message:
-        root.info("parsed command "
-              + "Count:" + command_message.group(2)
-              + " Role:" + command_message.group(3)
-              + " Args:" + command_message.group(4)
-              + " Template:" + command_message.group(5))
-
-        await client.send_typing(message.channel)
-        result = get_message(command_message.group(1), int(command_message.group(2)), command_message.group(3),
-                          command_message.group(4))
-
-        # apply a template to the result (if requested)
-        result_template = command_message.group(5)
-        if (len(result_template) > 0):
-            msg = result_template.format(s=result)
-        else:
-            msg = result
-
-    elif not command_message and directed:
-        msg = bot.get_response(str(plain_message)).text
-
-    else:
-        return
-
-    await client.send_message(message.channel, msg)
-
 
 def get_message(full_command, count, role, args):
     if role == 'h':
@@ -168,6 +87,84 @@ def apply_template(template, value=''):
         'w': '!' + '2d6+0' + value + '|{s[total]}'
     }.get(template, False)
 
+
+@client.async_event
+def on_ready():
+    root.info('Logged in as %s, id: %s', client.user.name, client.user.id)
+
+
+@client.event
+async def on_message(message):
+    # we do not want the bot to reply to itself
+    if message.author == client.user:
+        return
+
+    await client.change_presence(game=discord.Game(name='RNG the Game'))
+
+    # remove bot from message if included (in @botname scenario)
+    if client.user in message.mentions:
+        directed = True
+        AT_BOT = "<@" + client.user.id + ">"
+        plain_message = message.content[len(AT_BOT):]
+    else:
+        directed = False
+        plain_message = message.content
+
+    # simplify the message format
+    plain_message = plain_message.lower().strip(string.whitespace)
+
+    # expressions
+    command_expression = re.compile(r"(?:!)(([0-9]+)(d|c|r|h)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
+    template_expression = re.compile(r"(?:!)([A-Za-z]+)([0-9+,]*)")
+
+    # check if a template needs applied
+    template_message = template_expression.match(plain_message)
+    if template_message:
+        reformed_message = apply_template(template_message.group(1), template_message.group(2))
+        if reformed_message:
+            plain_message = reformed_message
+            reformed_message = True
+
+    # convert the message to our command format
+    command_message = command_expression.match(plain_message)
+
+    # execute the request
+    if command_message:
+        root.info("parsed command "
+                  + "Count:" + command_message.group(2)
+                  + " Role:" + command_message.group(3)
+                  + " Args:" + command_message.group(4)
+                  + " Template:" + command_message.group(5))
+
+        await client.send_typing(message.channel)
+        result = get_message(command_message.group(1), int(command_message.group(2)), command_message.group(3),
+                             command_message.group(4))
+
+        # apply a template to the result (if requested)
+        result_template = command_message.group(5)
+        if (len(result_template) > 0):
+            msg = result_template.format(s=result)
+        else:
+            msg = result
+
+    # if no command, generate a (useless?) response
+    elif not command_message and not template_message and (directed or message.channel.is_private):
+        f = open('training_text.txt', 'a')
+        f.write(str(plain_message) + '\n')
+        f.close()
+        if os.path.exists('training_text.txt'):
+            with open("training_text.txt") as f:
+                text = f.read()
+            f.close()
+            mark_text = markovify.NewlineText(text)
+            msg = mark_text.make_short_sentence(300)
+        if not msg:
+            msg = 'Learning.'
+
+    else:
+        return
+
+    await client.send_message(message.channel, msg)
 
 if __name__ == '__main__':
     main()
