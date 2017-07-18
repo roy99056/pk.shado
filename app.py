@@ -1,20 +1,30 @@
+from __future__ import absolute_import
+from __future__ import division, print_function, unicode_literals
+
 import json
 import logging
 import random
 import re
 import string
 import sys
-import markovify
-import os
 
 import discord
+import markovify
 from card_picker.Deck import Deck
 from dice_roller.DiceThrower import DiceThrower
+from sumy.nlp.stemmers import Stemmer
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.summarizers.lsa import LsaSummarizer as Summarizer
+from sumy.utils import get_stop_words
 
 # set a few vars
 dice = DiceThrower()
 root = logging.getLogger('bot')
 client = discord.Client()
+LANGUAGE = "english"
+SENTENCES_COUNT = 2
+
 
 # https://regex101.com/r/SrVpEg/2
 # some base classes
@@ -37,6 +47,7 @@ def main():
     root.addHandler(ch)
 
     client.run(DISCORD_BOT_TOKEN)
+
 
 def get_message(full_command, count, role, args):
     if role == 'h':
@@ -86,6 +97,30 @@ def apply_template(template, value=''):
         'f': '!' + '4d3-2' + value + '|{s[total]}',
         'w': '!' + '2d6+0' + value + '|{s[total]}'
     }.get(template, False)
+
+
+def get_sentence(plain_message):
+    f = open('training_text.txt', 'a')
+    f.write(str(plain_message) + '\n')
+    f.close()
+    with open("training_text.txt") as f:
+        text = f.read()
+    f.close()
+    mark_text = markovify.NewlineText(text)
+    full_text = mark_text.make_sentence()
+    parser = PlaintextParser.from_string(full_text, Tokenizer(LANGUAGE))
+    stemmer = Stemmer(LANGUAGE)
+
+    summarizer = Summarizer(stemmer)
+    summarizer.stop_words = get_stop_words(LANGUAGE)
+
+    msg = ""
+    for sentence in summarizer(parser.document, SENTENCES_COUNT):
+        msg = str(msg) + " " + str(sentence)
+
+    if not msg:
+        msg = 'Learning.'
+    return msg
 
 
 @client.async_event
@@ -149,22 +184,13 @@ async def on_message(message):
 
     # if no command, generate a (useless?) response
     elif not command_message and not template_message and (directed or message.channel.is_private):
-        f = open('training_text.txt', 'a')
-        f.write(str(plain_message) + '\n')
-        f.close()
-        if os.path.exists('training_text.txt'):
-            with open("training_text.txt") as f:
-                text = f.read()
-            f.close()
-            mark_text = markovify.NewlineText(text)
-            msg = mark_text.make_short_sentence(300)
-        if not msg:
-            msg = 'Learning.'
-
+        root.info('Plain text response.')
+        msg = get_sentence(plain_message)
     else:
         return
 
     await client.send_message(message.channel, msg)
+
 
 if __name__ == '__main__':
     main()
