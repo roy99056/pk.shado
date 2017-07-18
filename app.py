@@ -9,14 +9,8 @@ import string
 import sys
 
 import discord
-import markovify
 from card_picker.Deck import Deck
 from dice_roller.DiceThrower import DiceThrower
-from sumy.nlp.stemmers import Stemmer
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.summarizers.lsa import LsaSummarizer as Summarizer
-from sumy.utils import get_stop_words
 
 # set a few vars
 dice = DiceThrower()
@@ -99,30 +93,6 @@ def apply_template(template, value=''):
     }.get(template, False)
 
 
-def get_sentence(plain_message):
-    f = open('training_text.txt', 'a')
-    f.write(str(plain_message) + '\n')
-    f.close()
-    with open("training_text.txt") as f:
-        text = f.read()
-    f.close()
-    mark_text = markovify.NewlineText(text)
-    full_text = mark_text.make_sentence()
-    parser = PlaintextParser.from_string(full_text, Tokenizer(LANGUAGE))
-    stemmer = Stemmer(LANGUAGE)
-
-    summarizer = Summarizer(stemmer)
-    summarizer.stop_words = get_stop_words(LANGUAGE)
-
-    msg = ""
-    for sentence in summarizer(parser.document, SENTENCES_COUNT):
-        msg = str(msg) + " " + str(sentence)
-
-    if not msg:
-        msg = 'Learning.'
-    return msg
-
-
 @client.async_event
 def on_ready():
     root.info('Logged in as %s, id: %s', client.user.name, client.user.id)
@@ -185,7 +155,7 @@ async def on_message(message):
     # if no command, generate a (useless?) response
     elif not command_message and not template_message and (directed or message.channel.is_private):
         root.info('Plain text response.')
-        msg = get_sentence(plain_message)
+        msg = 'I do not understand.'
     else:
         return
 
