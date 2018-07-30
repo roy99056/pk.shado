@@ -10,6 +10,7 @@ import sys
 
 import discord
 from card_picker.Deck import Deck
+from card_picker.Card import *
 from dice_roller.DiceThrower import DiceThrower
 
 # set a few vars
@@ -45,10 +46,20 @@ def main():
 
 def get_message(full_command, count, role, args):
     if role == 'h':
+        card_conv = {
+            'standard' : StandardCard,
+            'shadow' : ShadowCard,
+            'tarot' : TarotCard,
+            'uno' : UnoCard
+        }
+
         if len(args) > 0:
-            deck = Deck(args)
+            card_type = args
         else:
-            deck = Deck('standard')
+            card_type = 'standard'
+
+        cards = card_conv[card_type]
+        deck = Deck(cards)
         deck.create()
         deck.shuffle()
         hand = deck.deal(count)
