@@ -1,5 +1,6 @@
 -e git+https://github.com/pknull/rpg-dice.git@master#egg=dice_roller
 -e git+https://github.com/pknull/rpg-card.git@master#egg=card_picker
+-e git+https://github.com/pknull/rpg-flip.git@master#egg=flipper
 -e git+https://github.com/pknull/chatterbot-markov.git@master#egg=chatterbot_markov
 discord.py==0.16.5
 sympy

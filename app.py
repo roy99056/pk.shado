@@ -11,7 +11,11 @@ import sys
 import discord
 from card_picker.Deck import Deck
 from card_picker.Card import *
+
 from dice_roller.DiceThrower import DiceThrower
+
+from flipper.Tosser import Tosser
+from flipper.Casts import *
 
 # set a few vars
 dice = DiceThrower()
@@ -66,12 +70,14 @@ def get_message(full_command, count, role, args):
         return hand
 
     elif role == 'c':
-        x = 1
-        bag = []
-        while x <= int(count):
-            bag.append(random.choice(['heads', 'tails']))
-            x += 1
-        return bag
+        tosser = Tosser(Coin)
+        result = tosser.toss(count)
+        return result
+
+    elif role == '8':
+        tosser = Tosser(EightBall)
+        result = tosser.toss(count)
+        return result
 
     elif role == 'r':
         members = client.get_all_members()
