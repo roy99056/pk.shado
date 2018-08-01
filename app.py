@@ -97,7 +97,9 @@ def get_message(full_command, count, role, args):
         msg = dice.throw(full_command)
         return msg
 
-    return ''
+    else:
+        root.info("Unknown role " + role)
+        return ''
 
 
 def apply_template(template, value=''):
