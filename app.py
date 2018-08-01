@@ -74,7 +74,7 @@ def get_message(full_command, count, role, args):
         result = tosser.toss(count)
         return result
 
-    elif role == '8':
+    elif role == 'e':
         tosser = Tosser(EightBall)
         result = tosser.toss(count)
         return result
