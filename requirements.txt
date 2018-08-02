@@ -4,5 +4,6 @@
 -e git+https://github.com/pknull/chatterbot-markov.git@master#egg=chatterbot_markov
 discord.py==0.16.6
 sympy==1.2
+numpy==1.15.0
 ChatterBot==0.5.3
 markovify==0.5.3
