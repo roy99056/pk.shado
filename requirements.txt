@@ -3,6 +3,6 @@
 -e git+https://github.com/pknull/rpg-flip.git@b2c035a#egg=flipper
 -e git+https://github.com/pknull/chatterbot-markov.git@master#egg=chatterbot_markov
 discord.py==0.16.6
-sympy
+sympy==1.2
 ChatterBot==0.5.3
 markovify==0.5.3
