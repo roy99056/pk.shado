@@ -2,7 +2,7 @@
 -e git+https://github.com/pknull/rpg-card.git@8c1d9eb#egg=card_picker
 -e git+https://github.com/pknull/rpg-flip.git@b2c035a#egg=flipper
 -e git+https://github.com/pknull/chatterbot-markov.git@master#egg=chatterbot_markov
-discord.py[voice]
+discord.py==0.16.6
 sympy
 ChatterBot==0.5.3
 markovify==0.5.3
