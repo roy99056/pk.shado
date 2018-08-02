@@ -7,15 +7,10 @@ import random
 import re
 import string
 import sys
+import os
 
 import discord
 import markovify
-
-from sumy.nlp.stemmers import Stemmer
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.summarizers.lsa import LsaSummarizer as Summarizer
-from sumy.utils import get_stop_words
 
 from card_picker.Deck import Deck
 from card_picker.Card import *
@@ -25,7 +20,23 @@ from dice_roller.DiceThrower import DiceThrower
 from flipper.Tosser import Tosser
 from flipper.Casts import *
 
+from chatterbot import ChatBot
+
 # set a few vars
+bot = ChatBot(
+        'danger_bot',
+        trainer='chatterbot.trainers.ChatterBotCorpusTrainer',
+        storage_adapter="chatterbot.storage.JsonFileStorageAdapter",
+        logic_adapters=[
+            "chatterbot.logic.MathematicalEvaluation",
+            {
+                'import_path': 'chatterbot_markov.MarkovAdapter',
+                'threshold': 0.6,
+                'default_response': 'I am sorry, but I do not understand.'
+            }
+        ],
+        database="learning.db"
+    )
 root = logging.getLogger('bot')
 client = discord.Client()
 LANGUAGE = "english"
@@ -114,26 +125,6 @@ def get_message(full_command, count, role, args):
         return ''
 
 
-def get_sentence(plain_message):
-    f = open('training_text.txt', 'a')
-    f.write(str(plain_message) + '\n')
-    f.close()
-    with open("training_text.txt") as f:
-        text = f.read()
-    f.close()
-    mark_text = markovify.NewlineText(text)
-    full_text = mark_text.make_sentence()
-    parser = PlaintextParser.from_string(full_text, Tokenizer(LANGUAGE))
-    stemmer = Stemmer(LANGUAGE)
-    summarizer = Summarizer(stemmer)
-    summarizer.stop_words = get_stop_words(LANGUAGE)
-    msg = ""
-    for sentence in summarizer(parser.document, SENTENCES_COUNT):
-        msg = str(msg) + " " + str(sentence)
-    if not msg:
-        msg = 'Learning.'
-    return msg
-
 def apply_template(template, value=''):
     root.info('parsed template:%s value:%s', template, value)
     return {
@@ -206,7 +197,8 @@ async def on_message(message):
     # if no command, generate a (useless?) response
     elif not command_message and not template_message and (directed or message.channel.is_private):
         root.info('Plain text response.')
-        msg = get_sentence(plain_message)
+        msg = bot.get_response(str(plain_message)).text
+
     else:
         return
 
