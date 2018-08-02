@@ -7,10 +7,7 @@ import random
 import re
 import string
 import sys
-import os
-
 import discord
-import markovify
 
 from card_picker.Deck import Deck
 from card_picker.Card import *
@@ -20,23 +17,7 @@ from dice_roller.DiceThrower import DiceThrower
 from flipper.Tosser import Tosser
 from flipper.Casts import *
 
-from chatterbot import ChatBot
-
 # set a few vars
-bot = ChatBot(
-        'danger_bot',
-        trainer='chatterbot.trainers.ChatterBotCorpusTrainer',
-        storage_adapter="chatterbot.storage.JsonFileStorageAdapter",
-        logic_adapters=[
-            "chatterbot.logic.MathematicalEvaluation",
-            {
-                'import_path': 'chatterbot_markov.MarkovAdapter',
-                'threshold': 0.6,
-                'default_response': 'I am sorry, but I do not understand.'
-            }
-        ],
-        database="learning.db"
-    )
 root = logging.getLogger('bot')
 client = discord.Client()
 LANGUAGE = "english"
@@ -197,7 +178,7 @@ async def on_message(message):
     # if no command, generate a (useless?) response
     elif not command_message and not template_message and (directed or message.channel.is_private):
         root.info('Plain text response.')
-        msg = bot.get_response(str(plain_message)).text
+        msg = "I do not understand."
 
     else:
         return
