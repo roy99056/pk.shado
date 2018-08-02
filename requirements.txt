@@ -1,8 +1,8 @@
--e git+https://github.com/pknull/rpg-dice.git@master#egg=dice_roller
--e git+https://github.com/pknull/rpg-card.git@master#egg=card_picker
--e git+https://github.com/pknull/rpg-flip.git@master#egg=flipper
+-e git+https://github.com/pknull/rpg-dice.git@16e6570#egg=dice_roller
+-e git+https://github.com/pknull/rpg-card.git@8c1d9eb#egg=card_picker
+-e git+https://github.com/pknull/rpg-flip.git@b2c035a#egg=flipper
 -e git+https://github.com/pknull/chatterbot-markov.git@master#egg=chatterbot_markov
-discord.py==0.16.5
+discord.py[voice]
 sympy
-#ChatterBot==0.5.3
-#markovify==0.5.3
+ChatterBot==0.5.3
+markovify==0.5.3

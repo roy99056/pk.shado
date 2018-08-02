@@ -9,6 +9,14 @@ import string
 import sys
 
 import discord
+import markovify
+
+from sumy.nlp.stemmers import Stemmer
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.summarizers.lsa import LsaSummarizer as Summarizer
+from sumy.utils import get_stop_words
+
 from card_picker.Deck import Deck
 from card_picker.Card import *
 
@@ -18,7 +26,6 @@ from flipper.Tosser import Tosser
 from flipper.Casts import *
 
 # set a few vars
-dice = DiceThrower()
 root = logging.getLogger('bot')
 client = discord.Client()
 LANGUAGE = "english"
@@ -99,13 +106,33 @@ def get_message(full_command, count, role, args):
         return bag
 
     elif role == 'd':
-        msg = dice.throw(full_command)
+        msg = DiceThrower().throw(full_command)
         return msg
 
     else:
         root.info("Unknown role " + role)
         return ''
 
+
+def get_sentence(plain_message):
+    f = open('training_text.txt', 'a')
+    f.write(str(plain_message) + '\n')
+    f.close()
+    with open("training_text.txt") as f:
+        text = f.read()
+    f.close()
+    mark_text = markovify.NewlineText(text)
+    full_text = mark_text.make_sentence()
+    parser = PlaintextParser.from_string(full_text, Tokenizer(LANGUAGE))
+    stemmer = Stemmer(LANGUAGE)
+    summarizer = Summarizer(stemmer)
+    summarizer.stop_words = get_stop_words(LANGUAGE)
+    msg = ""
+    for sentence in summarizer(parser.document, SENTENCES_COUNT):
+        msg = str(msg) + " " + str(sentence)
+    if not msg:
+        msg = 'Learning.'
+    return msg
 
 def apply_template(template, value=''):
     root.info('parsed template:%s value:%s', template, value)
@@ -179,7 +206,7 @@ async def on_message(message):
     # if no command, generate a (useless?) response
     elif not command_message and not template_message and (directed or message.channel.is_private):
         root.info('Plain text response.')
-        msg = 'I do not understand.'
+        msg = get_sentence(plain_message)
     else:
         return
 
