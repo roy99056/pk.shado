@@ -79,6 +79,11 @@ def get_message(full_command, count, role, args):
         result = tosser.toss(count)
         return result
 
+    elif role == 'k':
+        tosser = Tosser(Killer)
+        result = tosser.toss(count)
+        return result
+
     elif role == 'r':
         members = client.get_all_members()
         actives = []
@@ -138,7 +143,7 @@ async def on_message(message):
     plain_message = plain_message.lower().strip(string.whitespace)
 
     # expressions
-    command_expression = re.compile(r"(?:!)(([0-9]+)(d|c|e|r|h)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
+    command_expression = re.compile(r"(?:!)(([0-9]+)(d|c|e|r|h|k)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
     template_expression = re.compile(r"(?:!)([A-Za-z]+)([0-9+,]*)")
 
     # check if a template needs applied
