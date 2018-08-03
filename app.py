@@ -192,21 +192,40 @@ async def on_ready():
 
 
 @bot.command(pass_context=True)
-async def vcr(ctx, amount: int, voice_channel_id: str):
+async def vcr(ctx, amount: int):
     # First getting the voice channel object
-    voice_channel = discord.utils.get(ctx.message.server.channels, id = voice_channel_id)
+    voice_channel = ctx.message.author.voice_channel
     if not voice_channel:
         return await bot.say("That is not a valid voice channel.")
-
     members = voice_channel.voice_members
+    if len(members) < amount:
+        return await bot.say("Sample larger than population.")
     member_names = [x.display_name for x in members]
-
     msg = random.sample(member_names, int(amount))
-    embed = discord.Embed(title = "{} member(s) in {}".format(len(members), voice_channel.name),
-                          description = member_names,
-                          color=discord.Color.blue())
 
-    return await bot.say(msg)
+    embed = discord.Embed(
+        title="{} random users from {}".format(str(amount), voice_channel.name),
+        description="\n".join(str(x) for x in msg)
+    )
+    return await bot.say(embed=embed)
+
+
+
+@bot.command(pass_context=True)
+async def killbot(ctx):
+    """Kills the selfbot"""
+    print("Shutting down!")
+    await bot.say("Shutting down.")
+    await bot.close()
+
+@bot.event
+async def on_server_join(server):
+    root.info('Bot joined: ' + server.name)
+
+
+@bot.event
+async def on_server_remove(server):
+    root.info('Bot left: ' + server.name)
 
 
 if __name__ == '__main__':
