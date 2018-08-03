@@ -9,6 +9,9 @@ import string
 import sys
 import discord
 
+from discord.ext import commands
+bot = commands.Bot(command_prefix='!')
+
 from card_picker.Deck import Deck
 from card_picker.Card import *
 
@@ -19,7 +22,6 @@ from flipper.Casts import *
 
 # set a few vars
 root = logging.getLogger('bot')
-client = discord.Client()
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
 
@@ -44,7 +46,7 @@ def main():
     ch.setFormatter(formatter)
     root.addHandler(ch)
 
-    client.run(DISCORD_BOT_TOKEN)
+    bot.run(DISCORD_BOT_TOKEN)
 
 
 def get_message(full_command, count, role, args):
@@ -83,11 +85,12 @@ def get_message(full_command, count, role, args):
         result = tosser.toss(count)
         return result
 
+
     elif role == 'r':
-        members = client.get_all_members()
+        members = bot.get_all_members()
         actives = []
         for member in members:
-            if str(member.status) == "online" and str(member.display_name) != client.user.name:
+            if str(member.status) == "online" and str(member.display_name) != bot.user.name:
                 actives.append(member)
         x = 1
         bag = []
@@ -103,7 +106,7 @@ def get_message(full_command, count, role, args):
 
     else:
         root.info("Unknown role " + role)
-        return ''
+        return
 
 
 def apply_template(template, value=''):
@@ -116,23 +119,18 @@ def apply_template(template, value=''):
     }.get(template, False)
 
 
-@client.async_event
-def on_ready():
-    root.info('Logged in as %s, id: %s', client.user.name, client.user.id)
-
-
-@client.event
+@bot.event
 async def on_message(message):
     # we do not want the bot to reply to itself
-    if message.author == client.user:
+    if message.author == bot.user:
         return
 
-    await client.change_presence(game=discord.Game(name='RNG the Game'))
+    await bot.change_presence(game=discord.Game(name='RNG the Game'))
 
     # remove bot from message if included (in @botname scenario)
-    if client.user in message.mentions:
+    if bot.user in message.mentions:
         directed = True
-        AT_BOT = "<@" + client.user.id + ">"
+        AT_BOT = "<@" + bot.user.id + ">"
         plain_message = message.content[len(AT_BOT):]
     else:
         directed = False
@@ -164,13 +162,13 @@ async def on_message(message):
                   + " Args:" + command_message.group(4)
                   + " Template:" + command_message.group(5))
 
-        await client.send_typing(message.channel)
+        await bot.send_typing(message.channel)
         result = get_message(command_message.group(1), int(command_message.group(2)), command_message.group(3),
                              command_message.group(4))
 
         # apply a template to the result (if requested)
         result_template = command_message.group(5)
-        if (len(result_template) > 0):
+        if len(result_template) > 0:
             msg = result_template.format(s=result)
         else:
             msg = result
@@ -181,9 +179,34 @@ async def on_message(message):
         msg = "I do not understand."
 
     else:
+        await bot.process_commands(message)
         return
 
-    await client.send_message(message.channel, msg)
+    root.info('%s', msg)
+    await bot.send_message(message.channel, msg)
+
+
+@bot.event
+async def on_ready():
+    root.info('Logged in as %s, id: %s', bot.user.name, bot.user.id)
+
+
+@bot.command(pass_context=True)
+async def vcr(ctx, amount: int, voice_channel_id: str):
+    # First getting the voice channel object
+    voice_channel = discord.utils.get(ctx.message.server.channels, id = voice_channel_id)
+    if not voice_channel:
+        return await bot.say("That is not a valid voice channel.")
+
+    members = voice_channel.voice_members
+    member_names = [x.display_name for x in members]
+
+    msg = random.sample(member_names, int(amount))
+    embed = discord.Embed(title = "{} member(s) in {}".format(len(members), voice_channel.name),
+                          description = member_names,
+                          color=discord.Color.blue())
+
+    return await bot.say(msg)
 
 
 if __name__ == '__main__':
