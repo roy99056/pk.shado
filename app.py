@@ -244,7 +244,19 @@ async def headpat(ctx):
     pats = requests.get("http://headp.at/js/pats.json").json()
     pat = random.choice(pats)
     file = get_image_data("http://headp.at/pats/{}".format(pat))
-    return await bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
+    await bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
+
+
+@bot.command(pass_context=True)
+async def yandere(ctx, *tags):
+    data = requests.get("https://yande.re/post/index.json?limit={}&tags={}".format("200", '+'.join(tags))).json()
+    if len(data) == 0:
+        await bot.say("No results found.")
+        return
+    image = random.choice(data)
+    file = get_image_data(image["file_url"])
+    await bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
+
 
 
 if __name__ == '__main__':
