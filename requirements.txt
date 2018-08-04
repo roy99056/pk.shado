@@ -2,3 +2,4 @@
 -e git+https://github.com/pknull/rpg-card.git@8c1d9eb#egg=card_picker
 -e git+https://github.com/pknull/rpg-flip.git@b2c035a#egg=flipper
 discord.py==0.16.6
+requests

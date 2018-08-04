@@ -8,9 +8,11 @@ import re
 import string
 import sys
 import discord
+import requests
+import io
 
 from discord.ext import commands
-bot = commands.Bot(command_prefix='!')
+
 
 from card_picker.Deck import Deck
 from card_picker.Card import *
@@ -25,6 +27,7 @@ root = logging.getLogger('bot')
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
 
+bot = commands.Bot(command_prefix='!')
 
 # https://regex101.com/r/SrVpEg/2
 # some base classes
@@ -85,7 +88,6 @@ def get_message(full_command, count, role, args):
         result = tosser.toss(count)
         return result
 
-
     elif role == 'r':
         members = bot.get_all_members()
         actives = []
@@ -110,13 +112,19 @@ def get_message(full_command, count, role, args):
 
 
 def apply_template(template, value=''):
-    root.info('parsed template:%s value:%s', template, value)
     return {
         'sd': '!' + value + 'd6>=5f=1|{s[modified]} {s[success]} successes {s[fail]} fail',
         'st': '!' + value + 'hshadow',
         'f': '!' + '4d3-2' + value + '|{s[total]}',
         'w': '!' + '2d6+0' + value + '|{s[total]}'
     }.get(template, False)
+
+
+def get_image_data(url):
+    data = requests.get(url)
+    content = io.BytesIO(data.content)
+    filename = url.rsplit("/", 1)[-1]
+    return {"content": content, "filename": filename}
 
 
 @bot.event
@@ -148,8 +156,8 @@ async def on_message(message):
     if template_message:
         reformed_message = apply_template(template_message.group(1), template_message.group(2))
         if reformed_message:
+            root.info('parsed template:%s value:%s', template_message.group(1), template_message.group(2))
             plain_message = reformed_message
-            reformed_message = True
 
     # convert the message to our command format
     command_message = command_expression.match(plain_message)
@@ -174,21 +182,35 @@ async def on_message(message):
             msg = result
 
     # if no command, generate a (useless?) response
-    elif not command_message and not template_message and (directed or message.channel.is_private):
+    elif not command_message and (directed or message.channel.is_private):
         root.info('Plain text response.')
-        msg = "I do not understand."
+        msg = "I do not understand directed commands, please use the ![command] syntax."
 
     else:
         await bot.process_commands(message)
         return
 
-    root.info('%s', msg)
     await bot.send_message(message.channel, msg)
 
 
 @bot.event
 async def on_ready():
     root.info('Logged in as %s, id: %s', bot.user.name, bot.user.id)
+
+
+@bot.event
+async def on_server_join(server):
+    root.info('Bot joined: %s', server.name)
+
+
+@bot.event
+async def on_server_remove(server):
+    root.info('Bot left: %s', server.name)
+
+
+@bot.event
+async def on_command_completion(self, ctx):
+    root.info('parsed command:%s', ctx.message.content)
 
 
 @bot.command(pass_context=True)
@@ -210,22 +232,19 @@ async def vcr(ctx, amount: int):
     return await bot.say(embed=embed)
 
 
-
 @bot.command(pass_context=True)
 async def killbot(ctx):
-    """Kills the selfbot"""
     print("Shutting down!")
     await bot.say("Shutting down.")
     await bot.close()
 
-@bot.event
-async def on_server_join(server):
-    root.info('Bot joined: ' + server.name)
 
-
-@bot.event
-async def on_server_remove(server):
-    root.info('Bot left: ' + server.name)
+@bot.command(pass_context=True)
+async def headpat(ctx):
+    pats = requests.get("http://headp.at/js/pats.json").json()
+    pat = random.choice(pats)
+    file = get_image_data("http://headp.at/pats/{}".format(pat))
+    return await bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
 
 
 if __name__ == '__main__':
