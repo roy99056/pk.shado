@@ -52,7 +52,7 @@ def main():
     bot.run(DISCORD_BOT_TOKEN)
 
 
-def get_message(full_command, count, role, args):
+def get_message(message, full_command, count, role, args):
     if role == 'h':
         card_conv = {
             'standard' : StandardCard,
@@ -71,25 +71,25 @@ def get_message(full_command, count, role, args):
         deck.create()
         deck.shuffle()
         hand = deck.deal(count)
-        return hand
+        return '🎴 Card Hand ' + card_type[0].upper() + card_type[1:], hand
 
     elif role == 'c':
         tosser = Tosser(Coin)
         result = tosser.toss(count)
-        return result
+        return '⭕ Coin Flip', result
 
     elif role == 'e':
         tosser = Tosser(EightBall)
         result = tosser.toss(count)
-        return result
+        return '🎱 Eightball', result
 
     elif role == 'k':
         tosser = Tosser(Killer)
         result = tosser.toss(count)
-        return result
+        return '🗡 Killers', result
 
     elif role == 'r':
-        members = bot.get_all_members()
+        members = message.server.members
         actives = []
         for member in members:
             if str(member.status) == "online" and str(member.display_name) != bot.user.name:
@@ -100,11 +100,13 @@ def get_message(full_command, count, role, args):
         while x <= int(count) and len(actives) > 0:
             bag.append(actives.pop().display_name)
             x += 1
-        return bag
+        return '👥 Members', bag
 
     elif role == 'd':
         msg = DiceThrower().throw(full_command)
-        return msg
+        if msg['natural'] == msg['modified']:
+            msg.pop('modified', None)
+        return '🎲 Dice Roll', msg
 
     else:
         root.info("Unknown role " + role)
@@ -171,8 +173,8 @@ async def on_message(message):
                   + " Template:" + command_message.group(5))
 
         await bot.send_typing(message.channel)
-        result = get_message(command_message.group(1), int(command_message.group(2)), command_message.group(3),
-                             command_message.group(4))
+        title, result = get_message(message, command_message.group(1), int(command_message.group(2)), command_message.group(3),
+                                    command_message.group(4))
 
         # apply a template to the result (if requested)
         result_template = command_message.group(5)
@@ -190,7 +192,19 @@ async def on_message(message):
         await bot.process_commands(message)
         return
 
-    await bot.send_message(message.channel, msg)
+    embed = discord.Embed(
+        title=title
+    )
+
+    if isinstance(msg, list):
+        embed.description = "\n".join(str(x) for x in msg)
+    elif isinstance(msg,dict):
+        for k, v in msg.items():
+            embed.add_field(name=k, value=v, inline=False)
+    else:
+        embed.description = msg
+
+    await bot.send_message(message.channel, embed=embed)
 
 
 @bot.event
@@ -256,7 +270,6 @@ async def yandere(ctx, *tags):
     image = random.choice(data)
     file = get_image_data(image["file_url"])
     await bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
-
 
 
 if __name__ == '__main__':
