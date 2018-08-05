@@ -34,8 +34,11 @@ class Anime():
             await self.bot.say("No results found.")
             return
         image = random.choice(data)
-        file = self.get_image_data(image["file_url"])
-        await self.bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
+        if "file_url" in image:
+            file = self.get_image_data(image["file_url"])
+            await self.bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
+        else:
+            await self.bot.say("Error getting picture.")
 
 
     @commands.command(pass_context=True)
@@ -48,8 +51,11 @@ class Anime():
             await self.bot.say("No results found.")
             return
         image = random.choice(data)
-        file = self.get_image_data(image["file_url"])
-        await self.bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
+        if "file_url" in image:
+            file = self.get_image_data(image["file_url"])
+            await self.bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
+        else:
+            await self.bot.say("Error getting picture.")
 
 
 def setup(bot):
