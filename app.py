@@ -23,7 +23,7 @@ from flipper.Casts import *
 root = logging.getLogger('bot')
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
-startup_extensions = ["Anime"]
+startup_extensions = ["Anime", "Pets"]
 
 bot = commands.Bot(
     command_prefix='!',

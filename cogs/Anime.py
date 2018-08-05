@@ -1,7 +1,5 @@
-import discord
-import requests
 import random
-import io
+from cogs.Utils import *
 
 from discord.ext import commands
 
@@ -10,17 +8,11 @@ class Anime():
     def __init__(self, bot):
         self.bot = bot
 
-    def get_image_data(self, url):
-        data = requests.get(url)
-        content = io.BytesIO(data.content)
-        filename = url.rsplit("/", 1)[-1]
-        return {"content": content, "filename": filename}
-
     @commands.command(pass_context=True)
     async def headpat(self, ctx):
         pats = requests.get("http://headp.at/js/pats.json").json()
         pat = random.choice(pats)
-        file = self.get_image_data("http://headp.at/pats/{}".format(pat))
+        file = get_image_data("http://headp.at/pats/{}".format(pat))
         await self.bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
 
 
@@ -35,7 +27,7 @@ class Anime():
             return
         image = random.choice(data)
         if "file_url" in image:
-            file = self.get_image_data(image["file_url"])
+            file = get_image_data(image["file_url"])
             await self.bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
         else:
             await self.bot.say("Error getting picture.")
@@ -52,7 +44,7 @@ class Anime():
             return
         image = random.choice(data)
         if "file_url" in image:
-            file = self.get_image_data(image["file_url"])
+            file = get_image_data(image["file_url"])
             await self.bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
         else:
             await self.bot.say("Error getting picture.")
