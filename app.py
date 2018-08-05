@@ -130,9 +130,6 @@ def apply_template(template, value=''):
     }.get(template, False)
 
 
-
-
-
 @bot.event
 async def on_message(message):
     # we do not want the bot to reply to itself
@@ -255,8 +252,6 @@ async def killbot(ctx):
     print("Shutting down!")
     await bot.say("Shutting down.")
     await bot.close()
-
-
 
 
 if __name__ == '__main__':
