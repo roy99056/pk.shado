@@ -8,11 +8,8 @@ import re
 import string
 import sys
 import discord
-import requests
-import io
 
 from discord.ext import commands
-
 
 from card_picker.Deck import Deck
 from card_picker.Card import *
@@ -26,8 +23,12 @@ from flipper.Casts import *
 root = logging.getLogger('bot')
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
+startup_extensions = ["Anime"]
 
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(
+    command_prefix='!',
+    description='A bot for gaming, and maybe anime?'
+)
 
 # https://regex101.com/r/SrVpEg/2
 # some base classes
@@ -48,6 +49,13 @@ def main():
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     ch.setFormatter(formatter)
     root.addHandler(ch)
+
+    for extension in startup_extensions:
+        try:
+            bot.load_extension('cogs.'+extension)
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            print('Failed to load extension {}\n{}'.format(extension, exc))
 
     bot.run(DISCORD_BOT_TOKEN)
 
@@ -122,11 +130,7 @@ def apply_template(template, value=''):
     }.get(template, False)
 
 
-def get_image_data(url):
-    data = requests.get(url)
-    content = io.BytesIO(data.content)
-    filename = url.rsplit("/", 1)[-1]
-    return {"content": content, "filename": filename}
+
 
 
 @bot.event
@@ -253,23 +257,6 @@ async def killbot(ctx):
     await bot.close()
 
 
-@bot.command(pass_context=True)
-async def headpat(ctx):
-    pats = requests.get("http://headp.at/js/pats.json").json()
-    pat = random.choice(pats)
-    file = get_image_data("http://headp.at/pats/{}".format(pat))
-    await bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
-
-
-@bot.command(pass_context=True)
-async def yandere(ctx, *tags):
-    data = requests.get("https://yande.re/post/index.json?limit={}&tags={}".format("200", '+'.join(tags))).json()
-    if len(data) == 0:
-        await bot.say("No results found.")
-        return
-    image = random.choice(data)
-    file = get_image_data(image["file_url"])
-    await bot.send_file(ctx.message.channel, fp=file["content"], filename=file["filename"])
 
 
 if __name__ == '__main__':
