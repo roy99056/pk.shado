@@ -11,19 +11,13 @@ import discord
 
 from discord.ext import commands
 
-from card_picker.Deck import Deck
-from card_picker.Card import *
 
-from dice_roller.DiceThrower import DiceThrower
-
-from flipper.Tosser import Tosser
-from flipper.Casts import *
 
 # set a few vars
 root = logging.getLogger('bot')
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
-startup_extensions = ["Anime", "Pets"]
+startup_extensions = ["Anime", "Pets", "Games"]
 
 bot = commands.Bot(
     command_prefix='!',
@@ -61,42 +55,8 @@ def main():
 
 
 def get_message(message, full_command, count, role, args):
-    if role == 'h':
-        card_conv = {
-            'standard' : StandardCard,
-            'shadow' : ShadowCard,
-            'tarot' : TarotCard,
-            'uno' : UnoCard
-        }
 
-        if len(args) > 0:
-            card_type = args
-        else:
-            card_type = 'standard'
-
-        cards = card_conv[card_type]
-        deck = Deck(cards)
-        deck.create()
-        deck.shuffle()
-        hand = deck.deal(count)
-        return '🎴 Card Hand ' + card_type[0].upper() + card_type[1:], hand
-
-    elif role == 'c':
-        tosser = Tosser(Coin)
-        result = tosser.toss(count)
-        return '⭕ Coin Flip', result
-
-    elif role == 'e':
-        tosser = Tosser(EightBall)
-        result = tosser.toss(count)
-        return '🎱 Eightball', result
-
-    elif role == 'k':
-        tosser = Tosser(Killer)
-        result = tosser.toss(count)
-        return '🗡 Killers', result
-
-    elif role == 'r':
+    if role == 'r':
         members = message.server.members
         actives = []
         for member in members:
@@ -109,12 +69,6 @@ def get_message(message, full_command, count, role, args):
             bag.append(actives.pop().display_name)
             x += 1
         return '👥 Members', bag
-
-    elif role == 'd':
-        msg = DiceThrower().throw(full_command)
-        if msg['natural'] == msg['modified']:
-            msg.pop('modified', None)
-        return '🎲 Dice Roll', msg
 
     else:
         root.info("Unknown role " + role)
@@ -151,7 +105,7 @@ async def on_message(message):
     plain_message = plain_message.lower().strip(string.whitespace)
 
     # expressions
-    command_expression = re.compile(r"(?:!)(([0-9]+)(d|c|e|r|h|k)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
+    command_expression = re.compile(r"(?:!)(([0-9]+)(r)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
     template_expression = re.compile(r"(?:!)([A-Za-z]+)([0-9+,]*)")
 
     # check if a template needs applied
