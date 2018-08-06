@@ -2,7 +2,8 @@ FROM python:3.6-alpine
 
 RUN apk add --update \
     git \
-    openssh
+    openssh \
+    gcc gfortran python python-dev py-pip build-base wget freetype-dev libpng-dev openblas-dev
 
 COPY . /app
 WORKDIR /app
