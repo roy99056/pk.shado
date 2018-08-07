@@ -3,14 +3,11 @@ from __future__ import division, print_function, unicode_literals
 
 import json
 import logging
-import random
-import re
 import string
 import sys
 import discord
 
 from discord.ext import commands
-
 
 
 # set a few vars
@@ -54,36 +51,6 @@ def main():
     bot.run(DISCORD_BOT_TOKEN)
 
 
-def get_message(message, full_command, count, role, args):
-
-    if role == 'r':
-        members = message.server.members
-        actives = []
-        for member in members:
-            if str(member.status) == "online" and str(member.display_name) != bot.user.name:
-                actives.append(member)
-        x = 1
-        bag = []
-        random.shuffle(actives)
-        while x <= int(count) and len(actives) > 0:
-            bag.append(actives.pop().display_name)
-            x += 1
-        return '👥 Members', bag
-
-    else:
-        root.info("Unknown role " + role)
-        return
-
-
-def apply_template(template, value=''):
-    return {
-        'sd': '!' + value + 'd6>=5f=1|{s[modified]} {s[success]} successes {s[fail]} fail',
-        'st': '!' + value + 'hshadow',
-        'f': '!' + '4d3-2' + value + '|{s[total]}',
-        'w': '!' + '2d6+0' + value + '|{s[total]}'
-    }.get(template, False)
-
-
 @bot.event
 async def on_message(message):
     # we do not want the bot to reply to itself
@@ -104,62 +71,7 @@ async def on_message(message):
     # simplify the message format
     plain_message = plain_message.lower().strip(string.whitespace)
 
-    # expressions
-    command_expression = re.compile(r"(?:!)(([0-9]+)(r)([\w_:+\-,<>=()]*))(?:\|)?([\w{}\[\] ]*)")
-    template_expression = re.compile(r"(?:!)([A-Za-z]+)([0-9+,]*)")
-
-    # check if a template needs applied
-    template_message = template_expression.match(plain_message)
-    if template_message:
-        reformed_message = apply_template(template_message.group(1), template_message.group(2))
-        if reformed_message:
-            root.info('parsed template:%s value:%s', template_message.group(1), template_message.group(2))
-            plain_message = reformed_message
-
-    # convert the message to our command format
-    command_message = command_expression.match(plain_message)
-
-    # execute the request
-    if command_message:
-        root.info("parsed command "
-                  + "Count:" + command_message.group(2)
-                  + " Role:" + command_message.group(3)
-                  + " Args:" + command_message.group(4)
-                  + " Template:" + command_message.group(5))
-
-        await bot.send_typing(message.channel)
-        title, result = get_message(message, command_message.group(1), int(command_message.group(2)), command_message.group(3),
-                                    command_message.group(4))
-
-        # apply a template to the result (if requested)
-        result_template = command_message.group(5)
-        if len(result_template) > 0:
-            msg = result_template.format(s=result)
-        else:
-            msg = result
-
-    # if no command, generate a (useless?) response
-    elif not command_message and (directed or message.channel.is_private):
-        root.info('Plain text response.')
-        msg = "I do not understand directed commands, please use the ![command] syntax."
-
-    else:
-        await bot.process_commands(message)
-        return
-
-    embed = discord.Embed(
-        title=title
-    )
-
-    if isinstance(msg, list):
-        embed.description = "\n".join(str(x) for x in msg)
-    elif isinstance(msg,dict):
-        for k, v in msg.items():
-            embed.add_field(name=k, value=v, inline=False)
-    else:
-        embed.description = msg
-
-    await bot.send_message(message.channel, embed=embed)
+    await bot.process_commands(message)
 
 
 @bot.event
@@ -180,25 +92,6 @@ async def on_server_remove(server):
 @bot.event
 async def on_command_completion(self, ctx):
     root.info('parsed command:%s', ctx.message.content)
-
-
-@bot.command(pass_context=True)
-async def vcr(ctx, amount: int):
-    # First getting the voice channel object
-    voice_channel = ctx.message.author.voice_channel
-    if not voice_channel:
-        return await bot.say("That is not a valid voice channel.")
-    members = voice_channel.voice_members
-    if len(members) < amount:
-        return await bot.say("Sample larger than population.")
-    member_names = [x.display_name for x in members]
-    msg = random.sample(member_names, int(amount))
-
-    embed = discord.Embed(
-        title="{} random users from {}".format(str(amount), voice_channel.name),
-        description="\n".join(str(x) for x in msg)
-    )
-    return await bot.say(embed=embed)
 
 
 @bot.command(pass_context=True)
