@@ -10,12 +10,15 @@ from flipper.Tosser import Tosser
 from flipper.Casts import *
 
 class Games:
+    """Game tools! Custom RNG tools for whatever."""
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(pass_context=True)
     async def dice(self, ctx, roll='1d1'):
+        """Roll some dice! Great for RPG and such.
+        See here for the roll syntax: https://github.com/pknull/rpg-dice"""
         msg = DiceThrower().throw(roll)
         print(msg)
         if type(msg) is dict:
@@ -29,6 +32,8 @@ class Games:
 
     @commands.command(pass_context=True)
     async def card(self, ctx, card: str, count=1):
+        """Deal a hand of cards. Doesn't currently support games.
+        cards: [standard,shadow,tarot,uno]"""
         card_conv = {
             'standard' : StandardCard,
             'shadow' : ShadowCard,
@@ -55,6 +60,7 @@ class Games:
 
     @commands.command(pass_context=True)
     async def coin(self, ctx, count=1):
+        """Flip a coin. Add a number for multiples."""
         tosser = Tosser(Coin)
         result = tosser.toss(count)
         if type(result) is list:
@@ -66,6 +72,7 @@ class Games:
 
     @commands.command(pass_context=True)
     async def eightball(self, ctx, count=1):
+        """Rolls an eightball!"""
         tosser = Tosser(EightBall)
         result = tosser.toss(count)
         if type(result) is list:
@@ -77,6 +84,7 @@ class Games:
 
     @commands.command(pass_context=True)
     async def killer(self, ctx, count=1):
+        """Pick a Dead By Daylight Killer!"""
         tosser = Tosser(Killer)
         result = tosser.toss(count)
         if type(result) is list:
@@ -88,6 +96,7 @@ class Games:
 
     @commands.command(pass_context=True)
     async def defender(self, ctx, count=1):
+        """Pick a Rainbow Six DEFENDER"""
         tosser = Tosser(Defender)
         result = tosser.toss(count)
         if type(result) is list:
@@ -99,6 +108,7 @@ class Games:
 
     @commands.command(pass_context=True)
     async def attacker(self, ctx, count=1):
+        """Pick a Rainbow Six ATTACKER"""
         tosser = Tosser(Attacker)
         result = tosser.toss(count)
         if type(result) is list:

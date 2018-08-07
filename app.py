@@ -14,11 +14,12 @@ from discord.ext import commands
 root = logging.getLogger('bot')
 LANGUAGE = "english"
 SENTENCES_COUNT = 2
-startup_extensions = ["Anime", "Pets", "Games"]
+startup_extensions = ["Anime", "Pets", "Games", "Members"]
 
 bot = commands.Bot(
     command_prefix='!',
-    description='A bot for gaming, and maybe anime?'
+    description='A bot for gaming, and maybe anime?',
+    pm_help=True
 )
 
 # https://regex101.com/r/SrVpEg/2

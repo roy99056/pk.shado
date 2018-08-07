@@ -3,7 +3,8 @@ from cogs.Utils import *
 from discord.ext import commands
 import random
 
-class Games:
+class Members:
+    """Stuff to randomly pick members from a channel."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -11,10 +12,13 @@ class Games:
 
     @commands.command(pass_context=True)
     async def sr(self, ctx, count=1):
+        """Pick a random user from the server."""
+        if ctx.message.server is None:
+            await self.bot.say("You can't do this in a private chat (you're the only one here...)")
         members = ctx.message.server.members
         actives = []
         for member in members:
-            if str(member.status) == "online" and str(member.display_name) != bot.user.name:
+            if str(member.status) == "online" and str(member.display_name) != self.bot.user.name:
                 actives.append(member)
         x = 1
         bag = []
@@ -30,6 +34,7 @@ class Games:
 
     @commands.command(pass_context=True)
     async def vr(self, ctx, amount: int):
+        """Pick a random user from the voice channel you're in."""
         # First getting the voice channel object
         voice_channel = ctx.message.author.voice_channel
         if not voice_channel:
@@ -48,4 +53,4 @@ class Games:
 
 
 def setup(bot):
-    bot.add_cog(Games(bot))
+    bot.add_cog(Members(bot))
