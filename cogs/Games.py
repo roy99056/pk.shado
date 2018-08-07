@@ -106,22 +106,22 @@ class Games:
         tosser = Tosser(Defender)
         result = tosser.toss(count)
         if type(result) is list:
-            title = '🗡 Killers'
+            title = '🛡️ Defenders'
             embed = self.make_embed(title, result)
             await self.bot.send_message(ctx.message.channel, embed=embed)
         else:
-            await self.bot.say("Error parsing coin.")
+            await self.bot.say("Error parsing defender.")
 
     @commands.command(pass_context=True)
-    async def killer(self, ctx, count=1):
-        tosser = Tosser(Killer)
+    async def attacker(self, ctx, count=1):
+        tosser = Tosser(Attacker)
         result = tosser.toss(count)
         if type(result) is list:
-            title = '🗡 Killers'
+            title = '🔫 Attackers'
             embed = self.make_embed(title, result)
             await self.bot.send_message(ctx.message.channel, embed=embed)
         else:
-            await self.bot.say("Error parsing coin.")
+            await self.bot.say("Error parsing attacker.")
 
 def setup(bot):
     bot.add_cog(Games(bot))
