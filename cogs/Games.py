@@ -85,8 +85,11 @@ class Games:
     @commands.command(pass_context=True)
     async def killer(self, ctx, count=1):
         """Pick a Dead By Daylight Killer!"""
+        class Killer:
+            SIDES = ['Trapper', 'Wraith', 'Hillbilly', 'Nurse', 'Huntress', 'Shape', 'Hag', 'Doctor', 'Pig', 'Clown',
+                     'Freddy', 'Leatherface']
         tosser = Tosser(Killer)
-        result = tosser.toss(count)
+        result = tosser.toss(count, True)
         if type(result) is list:
             title = '🗡 Killers'
             embed = make_embed(title, result)
@@ -97,8 +100,11 @@ class Games:
     @commands.command(pass_context=True)
     async def defender(self, ctx, count=1):
         """Pick a Rainbow Six DEFENDER"""
+        class Defender:
+            SIDES = ["Caviera", "Ela", "Vigil", "Echo", "Valkyrie", "Maestro", "Tachanka", "Alibi", "Lesion", "Jäger",
+                     "Frost", "Mira", "Smoke", "Bandit", "Mute", "Rook", "Kapkan", "Recruit", "Doc", "Pulse", "Castle"]
         tosser = Tosser(Defender)
-        result = tosser.toss(count)
+        result = tosser.toss(count, True)
         if type(result) is list:
             title = '🛡️ Defenders'
             embed = make_embed(title, result)
@@ -109,14 +115,37 @@ class Games:
     @commands.command(pass_context=True)
     async def attacker(self, ctx, count=1):
         """Pick a Rainbow Six ATTACKER"""
+        class Attacker:
+            SIDES = ["Sledge", "Thatcher", "Ash", "Thermite", "Twitch", "Montagne", "Glaz", "Fuze", "Blitz", "IQ",
+                     "Buck",
+                     "Blackbeard", "Capitão", "Hibana", "Jackal", "Ying", "Zofia", "Dokkaebi", "Lion", "Finka",
+                     "Recruit"]
         tosser = Tosser(Attacker)
-        result = tosser.toss(count)
+        result = tosser.toss(count, True)
         if type(result) is list:
             title = '🔫 Attackers'
             embed = make_embed(title, result)
             await self.bot.send_message(ctx.message.channel, embed=embed)
         else:
             await self.bot.say("Error parsing attacker.")
+
+    @commands.command(pass_context=True)
+    async def toss(self, ctx, items, count=1, unique='t'):
+        """Pick an amount from a list"""
+        words = items.split(',')
+
+        user_list = lambda: None
+        setattr(user_list, 'SIDES', words)
+
+        tosser = Tosser(user_list)
+        result = tosser.toss(count, bool(unique == 't'))
+
+        if type(result) is list:
+            title = '⁉ Lists!'
+            embed = make_embed(title, result)
+            await self.bot.send_message(ctx.message.channel, embed=embed)
+        else:
+            await self.bot.say("Error parsing list.")
 
 def setup(bot):
     bot.add_cog(Games(bot))
