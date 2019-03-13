@@ -1,3 +1,6 @@
+## 0.2.0 (March 13, 2019)
+
+
 ## 0.1.0 (March 13, 2019)
   - Made the bot responsible for some of the dumb specific lists
   - Added help for commands
