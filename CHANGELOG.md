@@ -1,3 +1,7 @@
+## 0.7.0 (March 13, 2019)
+  - Removed the bot from a config and went with an env for dockerization
+  - More automated deploy tweaks
+
 ## 0.6.0 (March 13, 2019)
 
 
