@@ -1,3 +1,9 @@
+## 0.8.0 (March 13, 2019)
+  - Bump version to 0.7.0.
+  - Removed json configuration in favor of env vars
+  - Bump version to 0.7.0.
+  - Removed the bot from a config and went with an env for dockerization
+
 ## 0.7.0 (March 13, 2019)
   - Removed json configuration in favor of env vars
   - More automated deploy tweaks
