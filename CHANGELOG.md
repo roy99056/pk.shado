@@ -1,3 +1,7 @@
+## 0.7.0 (March 13, 2019)
+  - Removed json configuration in favor of env vars
+  - More automated deploy tweaks
+
 ## 0.6.0 (March 13, 2019)
 
 
