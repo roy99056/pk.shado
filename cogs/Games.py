@@ -96,6 +96,28 @@ class Games:
             await self.bot.send_message(ctx.message.channel, embed=embed)
         else:
             await self.bot.say("Error parsing coin.")
+            
+     @commands.command(pass_context=True)
+    async def sperk(self, ctx, count=4):
+        """Pick a Dead By Daylight Survivor Perk!"""
+        class SPerk:
+            SIDES = ['Ace in the Hole', 'Adrenaline', 'Aftercare', 'Alert', 'Autodidact', 'Balanced Landing', 'Boil Over', 'Bond',
+                     'Borrowed Time', 'Botany Knowledge', 'Breakdown', 'Buckle Up', 'Calm Spirit', 'Dance With Me', 'Dark Sense',
+                     'Dead Hard', 'Decisive Strike', 'Déjà Vu', 'Deliverance', 'Detective\'s Hunch', 'Distortion', 'Diversion', 
+                    'Empathy', 'Flip-Flop', 'Head On', 'Hope', 'Iron Will', 'Kindred', 'Leader', 'Left Behind', 'Lightweight', 'Lithe', 
+                    'Mettle of Man', 'No Mither', 'No One Left Behind', 'Object of Obsession', 'Open-Handed', 'Pharmacy', 'Plunderer\'s Instinct', 
+                    'Poised', 'Premonition', 'Prove Thyself', 'Quick & Quiet', 'Resilience', 'Saboteur', 'Self-Care', 'Slippery Meat', 
+                    'Small Game', 'Sole Survivor', 'Solidarity', 'Spine Chill', 'Sprint Burst', 'Stake Out', 'Streetwise', 'This Is Not Happening',
+                    'Technician', 'Tenacity', 'Up the Ante', 'Unbreakable', 'Urban Evasion', 'Vigil', 'Wake Up!', 'We\'ll Make It', 'We\'re Gonna Live Forever', 
+                    'Windows of Opportunity']
+        tosser = Tosser(SPerk)
+        result = tosser.toss(count, True)
+        if type(result) is list:
+            title = '🗡 SPerk'
+            embed = make_embed(title, result)
+            await self.bot.send_message(ctx.message.channel, embed=embed)
+        else:
+            await self.bot.say("Error parsing coin.")
 
     @commands.command(pass_context=True)
     async def defender(self, ctx, count=1):
